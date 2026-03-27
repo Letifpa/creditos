@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assetplan — Métodos de Pago</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F9FAFB;
+      color: #1A1A2E;
+      min-height: 100vh;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ===== LOGO ===== */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .logo-wordmark {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1A1A2E;
+      letter-spacing: -0.5px;
+    }
+
+    /* ===== STEPPER ===== */
+    .stepper {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 48px;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 82px;
+    }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .step-dot.done   { background: #2B5BF6; color: #fff; }
+    .step-dot.active { background: #2B5BF6; color: #fff; }
+    .step-dot.todo   { background: #E5E7EB; color: #9CA3AF; }
+
+    .step-label {
+      font-size: 11px;
+      margin-top: 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .step-label.done   { color: #6B7280; font-weight: 500; }
+    .step-label.active { color: #2B5BF6; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+    .step-label.todo   { color: #9CA3AF; font-weight: 400; }
+
+    .step-connector {
+      flex: 1;
+      height: 2px;
+      margin-top: 13px; /* (28 - 2) / 2 to align with dot center */
+    }
+
+    .step-connector.done { background: #2B5BF6; }
+    .step-connector.todo { background: #E5E7EB; }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header { margin-bottom: 28px; }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #1A1A2E;
+      margin-bottom: 8px;
+    }
+
+    .page-title .accent { color: #2B5BF6; }
+
+    .page-subtitle { font-size: 16px; color: #6B7280; }
+
+    /* ===== TOTAL CARD ===== */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .total-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      margin-bottom: 6px;
+    }
+
+    .total-amount {
+      font-size: 36px;
+      font-weight: 800;
+      color: #2B5BF6;
+      letter-spacing: -1px;
+    }
+
+    .total-pill {
+      background: #EFF6FF;
+      color: #2B5BF6;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    /* ===== PAYMENT OPTIONS ===== */
+    .payment-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .payment-option {
+      background: #fff;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      user-select: none;
+    }
+
+    .payment-option.opt-selected {
+      background: #EDE9FE;
+      border-color: #7C3AED;
+    }
+
+    /* Custom radio */
+    .radio-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #D1D5DB;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .opt-selected .radio-btn {
+      border-color: #7C3AED;
+      background: #7C3AED;
+    }
+
+    .opt-selected .radio-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    /* Option icon */
+    .opt-icon {
+      font-size: 22px;
+      width: 36px;
+      text-align: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* Sparkle icon SVG */
+    .sparkle-icon {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      color: #7C3AED;
+    }
+
+    /* Option body */
+    .opt-body { flex: 1; min-width: 0; }
+
+    .opt-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1A1A2E;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .opt-sub { font-size: 13px; color: #2B5BF6; }
+    .opt-sub.purple { color: #7C3AED; }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 1.5px solid #9CA3AF;
+      font-size: 9px;
+      font-weight: 700;
+      color: #9CA3AF;
+      flex-shrink: 0;
+      cursor: help;
+    }
+
+    /* Option right */
+    .opt-right { text-align: right; flex-shrink: 0; }
+
+    .opt-right-label {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .opt-right-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1A1A2E;
+    }
+
+    /* ===== SUPPORT LINE ===== */
+    .support-line {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 32px;
+      line-height: 1.65;
+    }
+
+    .support-line a {
+      color: #2B5BF6;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* ===== FOOTER ACTIONS ===== */
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #6B7280;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 11px 24px;
+    }
+
+    .btn-ghost:hover { background: #F3F4F6; }
+
+    .btn-primary {
+      background: #2B5BF6;
+      color: #fff;
+      border-radius: 100px;
+      padding: 12px 40px;
+    }
+
+    .btn-primary:hover { background: #1a4be0; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+      padding: 32px;
+      position: relative;
+      transform: scale(0.94) translateY(10px);
+      transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      background: #F3F4F6;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #6B7280;
+      transition: background 0.15s;
+      font-family: 'Inter', sans-serif;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover { background: #E5E7EB; color: #374151; }
+
+    .modal-icon-wrap {
+      width: 64px;
+      height: 64px;
+      background: #EFF6FF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-heading {
+      font-size: 19px;
+      font-weight: 700;
+      color: #2B5BF6;
+      text-align: center;
+      margin-bottom: 24px;
+      line-height: 1.35;
+      padding: 0 20px;
+    }
+
+    /* ===== PLAN TABLE (MODAL 1) ===== */
+    .table-scroll {
+      overflow-x: auto;
+      margin: 0 -4px 24px;
+      padding: 0 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .plan-table {
+      width: 100%;
+      min-width: 460px;
+      border-collapse: collapse;
+    }
+
+    .plan-table thead th {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 2px solid #F3F4F6;
+      white-space: nowrap;
+    }
+
+    .plan-row {
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.12s ease;
+    }
+
+    .plan-row:hover { background: #FAFAFA; }
+    .plan-row:hover.row-selected { background: #EFF6FF; }
+
+    .plan-row td {
+      padding: 14px 12px;
+      font-size: 14px;
+      color: #374151;
+      border-bottom: 1px solid #F3F4F6;
+      vertical-align: middle;
+    }
+
+    .plan-row.row-selected {
+      background: #EFF6FF;
+      border-left: 3px solid #2B5BF6;
+    }
+
+    .plan-row.row-selected td {
+      color: #1A1A2E;
+      font-weight: 500;
+    }
+
+    .plan-radio-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plan-radio {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #D1D5DB;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .row-selected .plan-radio {
+      border-color: #2B5BF6;
+      background: #2B5BF6;
+    }
+
+    .row-selected .plan-radio::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    /* ===== SUMMARY ROWS (MODAL 2) ===== */
+    .summary-list { margin-bottom: 24px; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 14px;
+      gap: 12px;
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .s-label { color: #6B7280; }
+
+    .s-val {
+      color: #2B5BF6;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .summary-divider {
+      border: none;
+      border-top: 2px solid #E5E7EB;
+      margin: 8px 0 4px;
+    }
+
+    .summary-row.s-main .s-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A1A2E;
+    }
+
+    .summary-row.s-main .s-val {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .check-row input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #2B5BF6;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .check-row a {
+      color: #2B5BF6;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* ===== FULL-WIDTH BUTTON ===== */
+    .btn-full {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #2B5BF6;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s ease;
+    }
+
+    .btn-full:hover { background: #1a4be0; }
+    .btn-full:active { transform: scale(0.99); }
+
+    /* ===== SUCCESS SCREEN ===== */
+    #screen-success { display: none; }
+
+    .success-outer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 72vh;
+      text-align: center;
+      padding-bottom: 40px;
+    }
+
+    .check-circle {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: #22C55E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+    }
+
+    .check-circle.animate {
+      animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .check-svg {
+      stroke: #fff;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      overflow: visible;
+    }
+
+    .check-draw {
+      stroke-dasharray: 32;
+      stroke-dashoffset: 32;
+    }
+
+    .check-draw.animate {
+      animation: drawPath 0.38s ease 0.42s forwards;
+    }
+
+    @keyframes drawPath {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .success-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1A1A2E;
+      margin-bottom: 12px;
+    }
+
+    .success-sub {
+      font-size: 16px;
+      color: #6B7280;
+      max-width: 480px;
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    .success-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      padding: 20px 28px;
+      max-width: 420px;
+      width: 100%;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .sc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 14px;
+      gap: 12px;
+    }
+
+    .sc-row:last-child { border-bottom: none; }
+    .sc-label { color: #6B7280; }
+    .sc-val { color: #1A1A2E; font-weight: 600; text-align: right; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .container { padding: 28px 16px 60px; }
+
+      .page-title { font-size: 26px; }
+      .total-amount { font-size: 28px; }
+
+      .step-item { min-width: 0; flex: 1; }
+      .step-label { font-size: 10px; }
+
+      .payment-option { padding: 14px 14px; gap: 10px; }
+      .opt-title { font-size: 14px; }
+
+      .footer-actions { flex-direction: column-reverse; }
+      .footer-actions .btn { width: 100%; text-align: center; }
+
+      .modal-card { padding: 24px 18px; }
+      .modal-heading { font-size: 17px; padding: 0 8px; }
+
+      .success-title { font-size: 22px; }
+      .success-sub { font-size: 14px; }
+      .success-card { padding: 16px 20px; }
+    }
+
+    @media (max-width: 400px) {
+      .step-label.done,
+      .step-label.todo { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================== SCREEN 1: MAIN ======================== -->
+<div id="screen-main">
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="16,3 30,28 2,28" fill="#2B5BF6" rx="2"/>
+        <polygon points="16,3 30,28 2,28" fill="none" stroke="#1a4be0" stroke-width="0.5" rx="2"/>
+      </svg>
+      <span class="logo-wordmark">assetplan</span>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper" role="list" aria-label="Progreso de pago">
+      <div class="step-item" role="listitem">
+        <div class="step-dot done">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,7 5.5,10.5 12,4"/>
+          </svg>
+        </div>
+        <span class="step-label done">Identificación</span>
+      </div>
+      <div class="step-connector done"></div>
+      <div class="step-item" role="listitem">
+        <div class="step-dot done">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,7 5.5,10.5 12,4"/>
+          </svg>
+        </div>
+        <span class="step-label done">Detalle de pago</span>
+      </div>
+      <div class="step-connector done"></div>
+      <div class="step-item" role="listitem" aria-current="step">
+        <div class="step-dot active">3</div>
+        <span class="step-label active">Métodos de pago</span>
+      </div>
+      <div class="step-connector todo"></div>
+      <div class="step-item" role="listitem">
+        <div class="step-dot todo">4</div>
+        <span class="step-label todo">Confirmación</span>
+      </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">Métodos de <span class="accent">pago</span></h1>
+      <p class="page-subtitle">Elige el canal de pago que prefieras.</p>
+    </div>
+
+    <!-- Total Amount Card -->
+    <div class="card total-card">
+      <div>
+        <div class="total-label">Total a pagar</div>
+        <div class="total-amount">$350.000</div>
+      </div>
+      <div class="total-pill">Arriendo mensual</div>
+    </div>
+
+    <!-- Payment Options -->
+    <div class="payment-options" role="radiogroup" aria-label="Método de pago">
+
+      <!-- Option A: Skip Payment (selected by default) -->
+      <div class="payment-option opt-selected" id="opt-a" role="radio" aria-checked="true" tabindex="0">
+        <div class="radio-btn" aria-hidden="true"></div>
+        <svg class="sparkle-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/>
+          <path d="M19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75L19 14z"/>
+          <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z"/>
+        </svg>
+        <div class="opt-body">
+          <div class="opt-title">No pagues el mes de <span id="opt-a-month">…</span></div>
+          <div class="opt-sub purple">Paga $0 hoy y distribuye este mes en tus pagos futuros.</div>
+        </div>
+      </div>
+
+      <!-- Option B: Bank Transfer (disabled) -->
+      <div class="payment-option" id="opt-b" role="radio" aria-checked="false" tabindex="0">
+        <div class="radio-btn" aria-hidden="true"></div>
+        <span class="opt-icon" aria-hidden="true">🏛</span>
+        <div class="opt-body">
+          <div class="opt-title">Transferencia bancaria</div>
+          <div class="opt-sub">Transfiere sin salir de Assetplan</div>
+        </div>
+      </div>
+
+      <!-- Option C: Card Payment (disabled) -->
+      <div class="payment-option" id="opt-c" role="radio" aria-checked="false" tabindex="0">
+        <div class="radio-btn" aria-hidden="true"></div>
+        <span class="opt-icon" aria-hidden="true">💳</span>
+        <div class="opt-body">
+          <div class="opt-title">
+            Tarjetas de débito y crédito
+            <span class="info-badge" title="Más información sobre cobro por servicio">i</span>
+          </div>
+          <div class="opt-sub">Paga hasta en 12 cuotas</div>
+        </div>
+        <div class="opt-right">
+          <div class="opt-right-label">Cobro por servicio</div>
+          <div class="opt-right-val">$9.450</div>
+        </div>
+      </div>
+
+    </div><!-- /payment-options -->
+
+    <!-- Support Line -->
+    <p class="support-line">
+      ¿Necesitas ayuda? Llámanos al
+      <a href="tel:+56227127090">+56227127090</a>
+      o escríbenos por
+      <a href="#" onclick="return false;">WhatsApp</a>.
+    </p>
+
+    <!-- Footer Buttons -->
+    <div class="footer-actions">
+      <button class="btn btn-ghost" onclick="return false;">Volver</button>
+      <button class="btn btn-primary" id="btn-pagar" onclick="handlePagar()">Pagar</button>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /#screen-main -->
+
+
+<!-- ======================== MODAL 1: Plan Selection ======================== -->
+<div class="modal-overlay" id="modal1" role="dialog" aria-modal="true" aria-labelledby="modal1-title">
+  <div class="modal-card">
+    <button class="modal-close-btn" onclick="closeModal('modal1')" aria-label="Cerrar">✕</button>
+
+    <div class="modal-icon-wrap" aria-hidden="true">🤲</div>
+
+    <h2 class="modal-heading" id="modal1-title">
+      Salta tu pago y empieza a pagar desde el siguiente mes
+    </h2>
+
+    <div class="table-scroll">
+      <table class="plan-table" role="table">
+        <thead>
+          <tr>
+            <th scope="col">Número de cuotas</th>
+            <th scope="col">Cuota mensual</th>
+            <th scope="col">Tasa interés mensual</th>
+            <th scope="col">Mes último pago</th>
+            <th scope="col">Pago total</th>
+          </tr>
+        </thead>
+        <tbody id="plan-tbody">
+          <tr class="plan-row row-selected" data-plan="0" onclick="selectPlan(0)" role="row" tabindex="0">
+            <td>
+              <div class="plan-radio-cell">
+                <span class="plan-radio" aria-hidden="true"></span>
+                3 cuotas
+              </div>
+            </td>
+            <td>$230.000</td>
+            <td>2,9%</td>
+            <td>Abril 2026</td>
+            <td>$690.000</td>
+          </tr>
+          <tr class="plan-row" data-plan="1" onclick="selectPlan(1)" role="row" tabindex="0">
+            <td>
+              <div class="plan-radio-cell">
+                <span class="plan-radio" aria-hidden="true"></span>
+                6 cuotas
+              </div>
+            </td>
+            <td>$130.000</td>
+            <td>2,9%</td>
+            <td>Julio 2026</td>
+            <td>$690.000</td>
+          </tr>
+          <tr class="plan-row" data-plan="2" onclick="selectPlan(2)" role="row" tabindex="0">
+            <td>
+              <div class="plan-radio-cell">
+                <span class="plan-radio" aria-hidden="true"></span>
+                12 cuotas
+              </div>
+            </td>
+            <td>$80.000</td>
+            <td>2,9%</td>
+            <td>Febrero 2027</td>
+            <td>$880.000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-full" onclick="goToModal2()">Continuar</button>
+  </div>
+</div>
+
+
+<!-- ======================== MODAL 2: Contract Summary ======================== -->
+<div class="modal-overlay" id="modal2" role="dialog" aria-modal="true" aria-labelledby="modal2-title">
+  <div class="modal-card">
+    <button class="modal-close-btn" onclick="closeModal('modal2')" aria-label="Cerrar">✕</button>
+
+    <div class="modal-icon-wrap" aria-hidden="true">📄</div>
+
+    <h2 class="modal-heading" id="modal2-title">Resumen de tu contratación</h2>
+
+    <div class="summary-list">
+      <div class="summary-row">
+        <span class="s-label">Número de cuotas</span>
+        <span class="s-val" id="m2-cuotas">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="s-label">Tasa interés mensual</span>
+        <span class="s-val" id="m2-tasa">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="s-label">Mes último pago</span>
+        <span class="s-val" id="m2-ultimo-pago">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="s-label">Pago total</span>
+        <span class="s-val" id="m2-total">—</span>
+      </div>
+      <hr class="summary-divider">
+      <div class="summary-row s-main">
+        <span class="s-label">Cuota mensual</span>
+        <span class="s-val" id="m2-cuota-mensual">—</span>
+      </div>
+    </div>
+
+    <label class="check-row">
+      <input type="checkbox" id="terms-cb" checked>
+      <span>Aceptas los <a href="#" onclick="return false;">Términos y Condiciones</a></span>
+    </label>
+
+    <button class="btn-full" onclick="showSuccess()">Confirmar</button>
+  </div>
+</div>
+
+
+<!-- ======================== SUCCESS SCREEN ======================== -->
+<div id="screen-success">
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="16,3 30,28 2,28" fill="#2B5BF6"/>
+      </svg>
+      <span class="logo-wordmark">assetplan</span>
+    </div>
+
+    <div class="success-outer">
+      <!-- Animated checkmark -->
+      <div class="check-circle" id="check-circle">
+        <svg class="check-svg" viewBox="0 0 42 42" width="44" height="44" aria-hidden="true">
+          <path class="check-draw" id="check-draw" d="M8 21 L17 30 L34 13"/>
+        </svg>
+      </div>
+
+      <h1 class="success-title">¡Pago procesado con éxito!</h1>
+      <p class="success-sub" id="success-sub">Tu pago ha sido diferido correctamente.</p>
+
+      <!-- Summary card -->
+      <div class="success-card">
+        <div class="sc-row">
+          <span class="sc-label">Método</span>
+          <span class="sc-val" id="sc-metodo">—</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-label">Cuotas</span>
+          <span class="sc-val" id="sc-cuotas">—</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-label">Próximo pago</span>
+          <span class="sc-val" id="sc-proximo">—</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-label">Total a pagar</span>
+          <span class="sc-val" id="sc-total">—</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="resetPrototype()">Volver al inicio</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ======================== JAVASCRIPT ======================== -->
+<script>
+  /* -------- DATA -------- */
+  const MONTHS_ES = [
+    'enero','febrero','marzo','abril','mayo','junio',
+    'julio','agosto','septiembre','octubre','noviembre','diciembre'
+  ];
+
+  const MONTHS_ES_CAP = MONTHS_ES.map(m => m.charAt(0).toUpperCase() + m.slice(1));
+
+  const now          = new Date();
+  const curMonthIdx  = now.getMonth();
+  const curYear      = now.getFullYear();
+  const nextMonthIdx = (curMonthIdx + 1) % 12;
+  const nextYear     = nextMonthIdx === 0 ? curYear + 1 : curYear;
+
+  const curMonthName  = MONTHS_ES[curMonthIdx];          // e.g. "marzo"
+  const nextMonthStr  = `${MONTHS_ES_CAP[nextMonthIdx]} ${nextYear}`; // e.g. "Abril 2026"
+
+  const PLANS = [
+    { label: '3 cuotas',  cuotaMensual: '$230.000', tasa: '2,9%', ultimoPago: 'Abril 2026',    total: '$690.000' },
+    { label: '6 cuotas',  cuotaMensual: '$130.000', tasa: '2,9%', ultimoPago: 'Julio 2026',    total: '$690.000' },
+    { label: '12 cuotas', cuotaMensual: '$80.000',  tasa: '2,9%', ultimoPago: 'Febrero 2027',  total: '$880.000' },
+  ];
+
+  let selectedPlan = 0;
+
+  /* -------- INIT -------- */
+  document.getElementById('opt-a-month').textContent = curMonthName;
+
+  /* -------- MODAL HELPERS -------- */
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* Close overlay on background click */
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  /* Keyboard: Esc closes topmost open modal */
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    ['modal2','modal1'].forEach(id => {
+      if (document.getElementById(id).classList.contains('open')) {
+        closeModal(id);
+      }
+    });
+  });
+
+  /* -------- SCREEN 1 ACTIONS -------- */
+  function handlePagar() {
+    openModal('modal1');
+  }
+
+  /* -------- PLAN SELECTION (MODAL 1) -------- */
+  function selectPlan(idx) {
+    selectedPlan = idx;
+    document.querySelectorAll('.plan-row').forEach((row, i) => {
+      row.classList.toggle('row-selected', i === idx);
+      row.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+    });
+  }
+
+  /* Keyboard support on plan rows */
+  document.querySelectorAll('.plan-row').forEach((row, i) => {
+    row.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectPlan(i);
+      }
+    });
+  });
+
+  /* -------- MODAL 1 → MODAL 2 -------- */
+  function goToModal2() {
+    const plan = PLANS[selectedPlan];
+    document.getElementById('m2-cuotas').textContent      = plan.label;
+    document.getElementById('m2-tasa').textContent        = plan.tasa;
+    document.getElementById('m2-ultimo-pago').textContent = plan.ultimoPago;
+    document.getElementById('m2-total').textContent       = plan.total;
+    document.getElementById('m2-cuota-mensual').textContent = plan.cuotaMensual;
+    closeModal('modal1');
+    openModal('modal2');
+  }
+
+  /* -------- MODAL 2 → SUCCESS -------- */
+  function showSuccess() {
+    const plan = PLANS[selectedPlan];
+
+    /* Populate success screen */
+    document.getElementById('success-sub').innerHTML =
+      `Tu pago de <strong>${curMonthName}</strong> ha sido diferido. ` +
+      `Tu próxima cuota es de <strong>${plan.cuotaMensual}</strong> en ${nextMonthStr.toLowerCase()}.`;
+
+    document.getElementById('sc-metodo').textContent  = `No pagues el mes de ${curMonthName}`;
+    document.getElementById('sc-cuotas').textContent  = plan.label;
+    document.getElementById('sc-proximo').textContent = nextMonthStr;
+    document.getElementById('sc-total').textContent   = plan.total;
+
+    /* Switch screens */
+    closeModal('modal2');
+    document.getElementById('screen-main').style.display    = 'none';
+    document.getElementById('screen-success').style.display = 'block';
+    document.body.style.overflow = '';
+
+    /* Trigger animations (restart them) */
+    const circle   = document.getElementById('check-circle');
+    const drawPath = document.getElementById('check-draw');
+
+    circle.classList.remove('animate');
+    drawPath.classList.remove('animate');
+
+    /* Force reflow so browsers actually restart the animations */
+    void circle.offsetWidth;
+    void drawPath.offsetWidth;
+
+    circle.classList.add('animate');
+    drawPath.classList.add('animate');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* -------- RESET (Volver al inicio) -------- */
+  function resetPrototype() {
+    selectedPlan = 0;
+
+    /* Reset plan table selection */
+    document.querySelectorAll('.plan-row').forEach((row, i) => {
+      row.classList.toggle('row-selected', i === 0);
+    });
+
+    /* Reset checkbox */
+    document.getElementById('terms-cb').checked = true;
+
+    /* Switch screens */
+    document.getElementById('screen-success').style.display = 'none';
+    document.getElementById('screen-main').style.display    = 'block';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
