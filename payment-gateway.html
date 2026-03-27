@@ -752,7 +752,7 @@
     <div class="payment-options" role="radiogroup" aria-label="Método de pago">
 
       <!-- Option A: Skip Payment (selected by default) -->
-      <div class="payment-option opt-selected" id="opt-a" role="radio" aria-checked="true" tabindex="0">
+      <div class="payment-option opt-selected" id="opt-a" role="radio" aria-checked="true" tabindex="0" onclick="selectOption('opt-a')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectOption('opt-a')}">
         <div class="radio-btn" aria-hidden="true"></div>
         <svg class="sparkle-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/>
@@ -766,7 +766,7 @@
       </div>
 
       <!-- Option B: Bank Transfer (disabled) -->
-      <div class="payment-option" id="opt-b" role="radio" aria-checked="false" tabindex="0">
+      <div class="payment-option" id="opt-b" role="radio" aria-checked="false" tabindex="0" onclick="selectOption('opt-b')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectOption('opt-b')}">
         <div class="radio-btn" aria-hidden="true"></div>
         <span class="opt-icon" aria-hidden="true">🏛</span>
         <div class="opt-body">
@@ -776,7 +776,7 @@
       </div>
 
       <!-- Option C: Card Payment (disabled) -->
-      <div class="payment-option" id="opt-c" role="radio" aria-checked="false" tabindex="0">
+      <div class="payment-option" id="opt-c" role="radio" aria-checked="false" tabindex="0" onclick="selectOption('opt-c')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectOption('opt-c')}">
         <div class="radio-btn" aria-hidden="true"></div>
         <span class="opt-icon" aria-hidden="true">💳</span>
         <div class="opt-body">
@@ -1032,8 +1032,23 @@
   });
 
   /* -------- SCREEN 1 ACTIONS -------- */
+  /* -------- OPTION SELECTION -------- */
+  const ALL_OPTIONS = ['opt-a', 'opt-b', 'opt-c'];
+
+  function selectOption(id) {
+    ALL_OPTIONS.forEach(optId => {
+      const el = document.getElementById(optId);
+      const selected = optId === id;
+      el.classList.toggle('opt-selected', selected);
+      el.setAttribute('aria-checked', selected ? 'true' : 'false');
+    });
+  }
+
   function handlePagar() {
-    openModal('modal1');
+    const optA = document.getElementById('opt-a');
+    if (optA.classList.contains('opt-selected')) {
+      openModal('modal1');
+    }
   }
 
   /* -------- PLAN SELECTION (MODAL 1) -------- */
